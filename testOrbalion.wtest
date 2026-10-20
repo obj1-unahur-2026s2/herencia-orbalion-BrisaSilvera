@@ -1,0 +1,212 @@
+import orbalion.*
+
+describe "test nergía total de equipos" {
+
+
+    test "Un entrenador no puede tener tener un rol distinto a los autorizados por la FOZ."{
+        assert.throwsException({ new Entrenador(
+                cantCiclosDeExp = 5,
+                estaEnSintoniaConEquipo = true,
+                precisionEstrategica = 90,
+                rol = "Maestro Pokémon" )})
+    }
+
+    test "Un equipo lumínico con radiación > 5000 y sin tecnologías activas → su energía total es su energía base" {
+        const equipo1 = new EquipoLuminico(nombre= "equipo1",
+                                          nivelEnergiaBase=800,
+                                          entrenador= "pepito",
+                                          nivelRadiacionCapturada=6000)
+        
+        assert.equals(800,equipo1.energiaTotal()) //se espera que de su base que es 800
+    }
+
+    test "un equipo luminico < 5000 → obtiene el bono 10%"{
+        const equipo2 = new EquipoLuminico(nombre= "equipo2",
+                                          nivelEnergiaBase=800,
+                                          entrenador= "pepito",
+                                          nivelRadiacionCapturada=4000)
+        
+        assert.equals(880,equipo2.energiaTotal()) //se espera que de su base que es 800
+    }
+
+    test "equipo sintetico con 6 modulos aplica correctamente la penalizacion del  20%"{
+        const equipo3 = new EquipoSintetico(
+            nombre = "equipo3",
+            nivelEnergiaBase = 800,
+            entrenador = "pepito",
+            nivelProcesamientoCentral = 20,
+            cantModulosActivos = 6,
+            certificadosEstableCompeticion = true
+        )
+        
+        assert.equals(640,equipo3.energiaTotal()) //se espera que de su base que es 800
+    }
+
+    test "Un equipo sintético con 4 módulos y 2 tecnologías complementarias → suma correctamente los valores energéticos."{
+        const interfaces = new TecnologiaEspecial(nombre= "interfaces de proyección mental", valorEnergetico=600, activa= true)
+        const nucleo = new TecnologiaEspecial(nombre= "núcleos gravitacionales", valorEnergetico=400, activa= true)
+        const equipo4 = new EquipoSintetico(nombre = "equipo4",nivelEnergiaBase=800,entrenador= "pepito",nivelProcesamientoCentral = 20, cantModulosActivos = 4, certificadosEstableCompeticion = true)
+
+        equipo4.agregarTecnologias(interfaces)
+        equipo4.agregarTecnologias(nucleo)
+
+        assert.equals(1800,equipo4.energiaTotal())
+
+    }
+}
+
+
+describe "elite galactica"{
+
+    test "Estratega cuántico con 12 ciclos y precisión 90 → es de élite galáctica."{
+        const entrenador1 = new Entrenador(cantCiclosDeExp = 12, estaEnSintoniaConEquipo = false,precisionEstrategica = 90, rol = "estratega cuantico")
+
+        assert.that(entrenador1.esDeEliteGalactica())
+    }
+
+    test "Arquitecto de energía con 11 ciclos pero sin sintonía → no es de élite."{
+        const entrenador2 = new Entrenador(cantCiclosDeExp = 11, estaEnSintoniaConEquipo = false,precisionEstrategica = 90, rol = "arquitecto de energia")
+
+        assert.notThat(entrenador2.esDeEliteGalactica())
+    }
+
+     test "Guía mental con 15 ciclos → siempre es de élite."{
+        const entrenador3 = new Entrenador(cantCiclosDeExp = 15, estaEnSintoniaConEquipo = false,precisionEstrategica = 90, rol = "guia mental")
+
+        assert.that(entrenador3.esDeEliteGalactica())
+    }   
+}
+
+
+
+describe "prestigio universal"{
+
+    test "Equipo lumínico con 3 cristales, entrenador de élite y una tecnología activa → es de prestigio universal."{
+        const entrenador1 = new Entrenador(cantCiclosDeExp = 12, estaEnSintoniaConEquipo = false,precisionEstrategica = 90, rol = "estratega cuantico")
+        const ejemplo1 = new EquipoLuminico(nombre = "luz",
+                                            nivelEnergiaBase = 800,
+                                            entrenador = entrenador1,
+                                            nivelRadiacionCapturada = 20)
+        const interfaces = new TecnologiaEspecial(nombre= "interfaces de proyección mental", valorEnergetico=600, activa= true)
+
+        ejemplo1.agregarTecnologias(interfaces)
+        ejemplo1.agregarCristalesSolares("vidrio")
+        ejemplo1.agregarCristalesSolares("panel")
+        ejemplo1.agregarCristalesSolares("ejemplo")
+
+        assert.that(ejemplo1.prestigioUniversal())                      
+
+    }
+
+     test "Equipo sintético certificado con 4 módulos y todas las tecnologías activas → es de prestigio."{
+        const entrenador1 = new Entrenador(cantCiclosDeExp = 12, estaEnSintoniaConEquipo = false,precisionEstrategica = 90, rol = "estratega cuantico")
+        const ejemplo2 = new EquipoSintetico(nombre = "luz",
+                                            nivelEnergiaBase = 800,
+                                            entrenador = entrenador1,
+                                            nivelProcesamientoCentral = 20,
+                                            cantModulosActivos = 4,
+                                            certificadosEstableCompeticion = true)
+        const interfaces = new TecnologiaEspecial(nombre= "interfaces de proyección mental", valorEnergetico=600, activa= true)
+
+        ejemplo2.agregarTecnologias(interfaces)
+        
+
+        assert.that(ejemplo2.prestigioUniversal())                      
+
+    }
+        test "Equipo lumínico con 2 cristales, entrenador de élite y una tecnología activa → no es de prestigio universal"{
+        const entrenador1 = new Entrenador(cantCiclosDeExp = 12, estaEnSintoniaConEquipo = false,precisionEstrategica = 90, rol = "estratega cuantico")
+        const ejemplo1 = new EquipoLuminico(nombre = "luz",
+                                            nivelEnergiaBase = 800,
+                                            entrenador = entrenador1,
+                                            nivelRadiacionCapturada = 20)
+        const interfaces = new TecnologiaEspecial(nombre= "interfaces de proyección mental", valorEnergetico=600, activa= true)
+
+        ejemplo1.agregarTecnologias(interfaces)
+        ejemplo1.agregarCristalesSolares("vidrio")
+        ejemplo1.agregarCristalesSolares("panel")
+
+        assert.notThat(ejemplo1.prestigioUniversal())                      
+
+    }
+
+     test "Equipo sintético certificado con 2 módulos y todas las tecnologías activas → no es de prestigio."{
+        const entrenador1 = new Entrenador(cantCiclosDeExp = 12, estaEnSintoniaConEquipo = false,precisionEstrategica = 90, rol = "estratega cuantico")
+        const ejemplo2 = new EquipoSintetico(nombre = "luz",
+                                            nivelEnergiaBase = 800,
+                                            entrenador = entrenador1,
+                                            nivelProcesamientoCentral = 20,
+                                            cantModulosActivos = 2,
+                                            certificadosEstableCompeticion = true)
+        const interfaces = new TecnologiaEspecial(nombre= "interfaces de proyección mental", valorEnergetico=600, activa= true)
+
+        ejemplo2.agregarTecnologias(interfaces)
+        
+
+        assert.notThat(ejemplo2.prestigioUniversal())                      
+
+    }   
+}
+
+
+
+describe "Equipos Etéricos"{
+
+    test "Equipo etérico con 3 portales, fluctuación 80 y 2 tecnologías activas → es de prestigio universal."{
+       const entrenador1 = new Entrenador(cantCiclosDeExp = 12, estaEnSintoniaConEquipo = false,precisionEstrategica = 90, rol = "estratega cuantico")
+       const ejemplo = new EquipoEterico(nombre = "luz",
+                                            nivelEnergiaBase = 800,
+                                            entrenador = entrenador1,
+                                            nivelFluctuacionDimensional = 80,
+                                            cantPortalesEnergeticosAbiertos = 3)
+
+        const interfaces = new TecnologiaEspecial(nombre= "interfaces de proyección mental", valorEnergetico=600, activa= true)
+        const pepe = new TecnologiaEspecial(nombre= "interfaces de proyección mental", valorEnergetico=600, activa= true)
+
+        ejemplo.agregarTecnologias(interfaces)
+        ejemplo.agregarTecnologias(pepe)
+        
+
+        assert.that(ejemplo.prestigioUniversal())  
+    }
+
+    test "Verificar que el incremento del 15% se aplica correctamente."{
+       const entrenador1 = new Entrenador(cantCiclosDeExp = 12, estaEnSintoniaConEquipo = false,precisionEstrategica = 90, rol = "estratega cuantico")
+       const ejemplo8 = new EquipoEterico(nombre = "luz",
+                                            nivelEnergiaBase = 800,
+                                            entrenador = entrenador1,
+                                            nivelFluctuacionDimensional = 80,
+                                            cantPortalesEnergeticosAbiertos = 3)
+
+        const interfaces = new TecnologiaEspecial(nombre= "interfaces de proyección mental", valorEnergetico=600, activa= true)
+        const pepe = new TecnologiaEspecial(nombre= "interfaces de proyección mental", valorEnergetico=600, activa= true)
+
+        ejemplo8.agregarTecnologias(interfaces)
+        ejemplo8.agregarTecnologias(pepe)
+        
+
+        //assert.that(ejemplo8.prestigioUniversal())
+        assert.equals(2300,ejemplo8.energiaTotal())
+    }
+
+    test "Verificar que un equipo etérico que no cumple las condiciones no suma el 15%."{
+       const entrenador1 = new Entrenador(cantCiclosDeExp = 12, estaEnSintoniaConEquipo = false,precisionEstrategica = 90, rol = "estratega cuantico")
+       const ejemplo8 = new EquipoEterico(nombre = "luz",
+                                            nivelEnergiaBase = 800,
+                                            entrenador = entrenador1,
+                                            nivelFluctuacionDimensional = 10,
+                                            cantPortalesEnergeticosAbiertos = 3)
+
+        const interfaces = new TecnologiaEspecial(nombre= "interfaces de proyección mental", valorEnergetico=600, activa= true)
+        const pepe = new TecnologiaEspecial(nombre= "interfaces de proyección mental", valorEnergetico=600, activa= true)
+
+        ejemplo8.agregarTecnologias(interfaces)
+        ejemplo8.agregarTecnologias(pepe)
+        
+
+        //assert.that(ejemplo8.prestigioUniversal())
+        assert.equals(2000,ejemplo8.energiaTotal())
+    }
+}
+
+
